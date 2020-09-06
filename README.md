@@ -2,6 +2,11 @@
 
 # build
 
+### node npm yarn install
+
+- `yum install nodejs npm`
+- `npm install -g yarn`
+
 ### npm と yarn が入った環境で以下を実行
 
 - `git clone https://github.com/newrice/sample00frontend.git`
