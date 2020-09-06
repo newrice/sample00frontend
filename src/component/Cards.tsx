@@ -9,6 +9,7 @@ import {
   Avatar,
   Typography,
 } from "@material-ui/core";
+import { ISeiya } from "./types";
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -30,28 +31,28 @@ const getCurrentDate = () => {
   }/${now.getDate()}  ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
 };
 
-export default ({ obj }: { obj: any }) => {
+export default ({ seiya }: { seiya: ISeiya }) => {
   const classes = useStyles();
   return (
     <Fragment>
       <Card className={classes.card}>
         <CardHeader
           avatar={
-            <Avatar aria-label="recipe" className={classes.avatar}>
-              {obj.horoscope}
+            <Avatar aria-label='recipe' className={classes.avatar}>
+              {seiya.horoscope}
             </Avatar>
           }
-          title={obj.name}
+          title={seiya.name}
           subheader={getCurrentDate()}
         />
         <CardMedia
           className={classes.media}
-          image={`data:image/jpeg;base64,${obj.image}`}
-          title={obj.name}
+          image={`data:image/jpeg;base64,${seiya.image}`}
+          title={seiya.name}
         />
         <CardContent>
-          <Typography variant="body2" color="textSecondary" component="p">
-            {obj.description}
+          <Typography variant='body2' color='textSecondary' component='p'>
+            {seiya.description}
           </Typography>
         </CardContent>
       </Card>
