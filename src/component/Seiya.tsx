@@ -2,9 +2,9 @@ import React, { useState, Fragment, useEffect } from "react";
 import Cards from "./Cards";
 import Select from "./Select";
 import { ISeiya, IResponseSeiya, IRequestSeiya } from "./types";
-import { baseGet, basePost, baseDelete } from "./api";
+import { baseGet, basePost, baseDelete, basePut } from "./api";
 import { setting } from "../setting";
-import { Button, TextField } from "@material-ui/core";
+import { Button, TextField, Grid } from "@material-ui/core";
 import { orientateImage, toBase64, toByteArray } from "./images";
 
 const createSelectList = (list: ISeiya[]) => {
@@ -27,9 +27,8 @@ export default () => {
   const [insDesc, setInsDesc] = useState<string>("");
   const [insHoro, setInsHoro] = useState<string>("");
   const [insImg, setInsImg] = useState<number[]>([]);
+  const [imgSrc, setImgSrc] = useState<string>("");
   const [isResizing, setIsResizing] = useState<boolean>(false);
-  // 削除
-  const [delId, setDelId] = useState<number | string>("");
 
   useEffect(() => {
     baseGet({
@@ -53,91 +52,119 @@ export default () => {
       />
       {seiya && <Cards seiya={seiya} />}
       <hr />
-      <TextField
-        type='text'
-        label='名前'
-        value={insName}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          setInsName(event.target.value);
-        }}
-      />
-      <TextField
-        type='text'
-        label='説明'
-        value={insDesc}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          setInsDesc(event.target.value);
-        }}
-      />
-      <TextField
-        type='text'
-        label='星座'
-        value={insHoro}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          setInsHoro(event.target.value);
-        }}
-      />
-      <input
-        type='file'
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-          if (event.target && event.target.files) {
-            const a = event.target.files[0];
-            setIsResizing(true);
-            orientateImage(a).then(({ imageFile }) => {
-              toBase64(imageFile).then((base64) => {
-                // 状態の更新
-                console.log(base64);
+
+      <Grid container direction='column' alignItems='center'>
+        <Grid item>
+          <TextField
+            type='text'
+            label='名前'
+            value={insName}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setInsName(event.target.value);
+            }}
+          />
+        </Grid>
+        <Grid item>
+          <TextField
+            type='text'
+            label='説明'
+            value={insDesc}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setInsDesc(event.target.value);
+            }}
+          />
+        </Grid>
+        <Grid item>
+          <TextField
+            type='text'
+            label='星座'
+            value={insHoro}
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              setInsHoro(event.target.value);
+            }}
+          />
+        </Grid>
+        <Grid item>
+          <input
+            type='file'
+            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+              if (event.target && event.target.files) {
+                const a = event.target.files[0];
+                setIsResizing(true);
+                orientateImage(a).then(({ imageFile }) => {
+                  toBase64(imageFile).then((base64) => {
+                    // 状態の更新
+                    setImgSrc(base64);
+                  });
+                  toByteArray(imageFile).then(
+                    ({ byteArray }: { byteArray: number[] }) => {
+                      setInsImg(byteArray);
+                      setIsResizing(false);
+                    }
+                  );
+                });
+              }
+            }}
+          />
+        </Grid>
+        <Grid item>{imgSrc && <img alt='update' src={imgSrc} />}</Grid>
+        <Grid item>
+          <Button
+            disabled={isResizing || !insName}
+            color='primary'
+            variant='outlined'
+            onClick={() => {
+              basePost({
+                url: setting.url,
+                body: {
+                  name: insName,
+                  description: insDesc,
+                  horoscope: insHoro,
+                  image: insImg,
+                } as IRequestSeiya,
               });
-              toByteArray(imageFile).then(
-                ({ byteArray }: { byteArray: number[] }) => {
-                  console.log(byteArray);
-                  setInsImg(byteArray);
-                  setIsResizing(false);
-                }
-              );
-            });
-          }
-        }}
-      />
-      <Button
-        disabled={isResizing || !insName}
-        color='primary'
-        variant='outlined'
-        onClick={() => {
-          basePost({
-            url: setting.url,
-            body: {
-              name: insName,
-              description: insDesc,
-              horoscope: insHoro,
-              image: insImg,
-            } as IRequestSeiya,
-          });
-        }}
-      >
-        登録
-      </Button>
-      <hr />
-      <Select
-        handleSelectChange={setDelId}
-        currentId={Number(delId)}
-        selectList={createSelectList(seiyaList)}
-      />
-      <Button
-        disabled={!delId}
-        color='primary'
-        variant='outlined'
-        onClick={() => {
-          baseDelete({
-            url: setting.url,
-            qparam: {
-              id: delId.toString(),
-            },
-          });
-        }}
-      >
-        削除
-      </Button>
+            }}
+          >
+            登録
+          </Button>
+          <Button
+            disabled={!seiya || !seiya.id || isResizing}
+            color='primary'
+            variant='outlined'
+            onClick={() => {
+              basePut({
+                url: setting.url,
+                qparam: {
+                  id: seiya && seiya.id ? seiya.id.toString() : "",
+                },
+                body: {
+                  name: insName || seiya?.name,
+                  description: insDesc || seiya?.description,
+                  horoscope: insHoro || seiya?.horoscope,
+                  image: insImg.length ? insImg : seiya?.image,
+                } as IRequestSeiya,
+              });
+            }}
+          >
+            更新
+          </Button>
+          <Button
+            disabled={!seiya || !seiya.id}
+            color='primary'
+            variant='outlined'
+            onClick={() => {
+              baseDelete({
+                url: setting.url,
+                qparam: {
+                  id: seiya && seiya.id ? seiya.id.toString() : "",
+                },
+              });
+            }}
+          >
+            削除
+          </Button>
+        </Grid>
+      </Grid>
     </Fragment>
   );
 };

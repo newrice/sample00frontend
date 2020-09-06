@@ -41,13 +41,13 @@ export const toByteArray = (file: Blob): Promise<{ byteArray: number[] }> => {
   });
 };
 
-export const toBase64 = (blob: Blob) => {
+export const toBase64 = (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
     var reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = function () {
       var base64data = reader.result;
-      resolve(base64data);
+      resolve(base64data as string);
     };
   });
 };
