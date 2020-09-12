@@ -2,4 +2,4 @@
 
 # build
 
-## **backedn 側の build.sh を参照してください**
+## **backend 側の build.sh を参照してください**
